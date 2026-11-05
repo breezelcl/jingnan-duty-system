@@ -20,6 +20,7 @@ interface AutoScheduleModalProps {
   line2Staff: StaffMember[];
   leaders: StaffMember[];
   existingShifts: DutyShift[];
+  existingDates: string[];
 }
 
 export const AutoScheduleModal: React.FC<AutoScheduleModalProps> = ({
@@ -30,6 +31,7 @@ export const AutoScheduleModal: React.FC<AutoScheduleModalProps> = ({
   line2Staff,
   leaders,
   existingShifts,
+  existingDates,
 }) => {
   if (!isOpen) return null;
 
@@ -154,7 +156,29 @@ export const AutoScheduleModal: React.FC<AutoScheduleModalProps> = ({
 
   const handleConfirm = () => {
     if (previewShifts.length === 0) return;
-    onApplySchedule(previewShifts);
+
+    // 检测与已有排班的日期重叠
+    const existingSet = new Set(existingDates);
+    const overlap = previewShifts.filter((s) => existingSet.has(s.date)).map((s) => s.date);
+
+    let toApply = previewShifts;
+    if (overlap.length > 0) {
+      const sample = overlap.slice(0, 5).join('、') + (overlap.length > 5 ? ' …' : '');
+      const choice = window.confirm(
+        `有 ${overlap.length} 天已存在排班（如 ${sample}）。\n\n` +
+          `点「确定」= 覆盖这些天的旧排班；\n点「取消」= 保留旧排班、只新增还没排的日期。`
+      );
+      if (!choice) {
+        // 跳过已有日期，只保留新日期
+        toApply = previewShifts.filter((s) => !existingSet.has(s.date));
+        if (toApply.length === 0) {
+          alert('所选范围内的日期都已排班，且你选择了保留旧排班，没有需要新增的日期。');
+          return;
+        }
+      }
+    }
+
+    onApplySchedule(toApply);
     onClose();
   };
 
