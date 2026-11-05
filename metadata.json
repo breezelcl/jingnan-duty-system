@@ -1,0 +1,6 @@
+{
+  "name": "德阳市人民医院旌南院区总值班管理系统",
+  "description": "德阳市人民医院旌南院区行政总值班管理系统，支持自动排班、移动端适配、人员管理与按时间段导出Excel排班表。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
